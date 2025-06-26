@@ -7,7 +7,10 @@
         "core": "*"
     },
     "files": [
-        "main.ts"
+        "main.ts",
+        "card.json",
+        "AS5600_illustration.png",
+        "_locales/fr/AS5600-strings.json"
     ],
     "testFiles": [],
     "public": true,
