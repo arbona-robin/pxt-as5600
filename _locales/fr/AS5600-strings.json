@@ -1,0 +1,6 @@
+{
+  "AS5600.readAngle|block": "lire l'angle en degrés",
+  "AS5600.isMagnetDetected|block": "aimant détecté",
+  "AS5600.isMagnetTooWeak|block": "aimant trop faible",
+  "AS5600.isMagnetTooStrong|block": "aimant trop fort"
+}
