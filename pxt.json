@@ -9,7 +9,7 @@
     "files": [
         "main.ts",
         "card.json",
-        "AS5600_illustration.png",
+        "AS5600_illustration.jpg",
         "_locales/fr/AS5600-strings.json"
     ],
     "testFiles": [],
