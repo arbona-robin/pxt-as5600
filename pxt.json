@@ -1,0 +1,22 @@
+{
+    "name": "pxt-as5600",
+    "version": "0.0.1",
+    "description": "MakeCode extension for the AS5600 magnetic rotary encoder",
+    "license": "MIT",
+    "dependencies": {
+        "core": "*"
+    },
+    "files": [
+        "main.ts"
+    ],
+    "testFiles": [],
+    "public": true,
+    "targetVersions": {
+        "target": "6.0.25",
+        "targetId": "microbit"
+    },
+    "supportedTargets": [
+        "microbit"
+    ],
+    "preferredEditor": "tsprj"
+}
