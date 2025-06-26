@@ -1,7 +1,7 @@
 {
   "name": "AS5600 Magnetic Rotary Encoder",
   "description": "Extension for the AS5600 magnetic rotary encoder, providing angle readings and magnet status.",
-  "imageUrl": ""https://raw.githubusercontent.com/arbona-robin/pxt-as5600/main/AS5600_illustration.jpg"",
+  "imageUrl": "https://raw.githubusercontent.com/arbona-robin/pxt-as5600/main/AS5600_illustration.jpeg",
   "videoUrl": "",
   "url": "https://github.com/arbona-robin/pxt-as5600"
 }
