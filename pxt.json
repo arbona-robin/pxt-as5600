@@ -1,6 +1,6 @@
 {
   "name": "pxt-as5600",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "MakeCode extension for the AS5600 magnetic rotary encoder",
   "license": "MIT",
   "dependencies": {
@@ -9,7 +9,7 @@
   "files": [
     "main.ts",
     "card.json",
-    "AS5600_illustration.jpeg",
+    "AS5600_illustration.jpg",
     "_locales/fr/AS5600-strings.json"
   ],
   "testFiles": [],
