@@ -1,72 +1,135 @@
-# Imports go at the top
-from microbit import *
+# -*- coding: utf-8 -*-
+"""
+This script reads the angle from an AS5600 magnetic rotary position sensor
+and displays the direction on the micro:bit's LED matrix using an OOP approach.
+"""
+from microbit import i2c, display, Image, sleep
 
-i2c.init()
+class AS5600:
+    """A class to interact with the AS5600 magnetic rotary position sensor."""
 
-AS5600_ADDRESS = 0x36
-ANGLE_REGISTER = b'\x0E'
-STATUS_REGISTER = b'\x0b'
+    # I2C and Register constants
+    DEFAULT_ADDRESS = 0x36
+    STATUS_REGISTER = b'\x0b'
+    ANGLE_REGISTER = b'\x0e'
+    RAW_ANGLE_MAX = 4096
+    DEGREES_PER_RAW_UNIT = 360 / RAW_ANGLE_MAX
 
-section = 360 / 16
-def displayAngle(degrees):
-    if  (degrees < section) | (degrees > 360 - section):
-        display.show(Image.ARROW_N)
-    elif (degrees < 90 - section):
-        display.show(Image.ARROW_NE)
-    elif (degrees < 90 + section):
-        display.show(Image.ARROW_E)
-    elif (degrees < 180 - section):
-        display.show(Image.ARROW_SE)
-    elif (degrees < 180 + section):
-        display.show(Image.ARROW_S)
-    elif (degrees < 270 - section):
-        display.show(Image.ARROW_SW)
-    elif (degrees < 270 + section):
-        display.show(Image.ARROW_W)
-    else:
-        display.show(Image.ARROW_NW)
+    def __init__(self, i2c_bus, address=DEFAULT_ADDRESS):
+        """
+        Initializes the sensor object.
 
-# Code in a 'while True:' loop repeats forever
-while True:
-    sleep(1000)
-    scans = i2c.scan()
-    if AS5600_ADDRESS in scans: # Check thath AS5600 is online
+        Args:
+            i2c_bus: The initialized I2C bus object from the microbit module.
+            address (int): The I2C address of the sensor.
+        """
+        self._i2c = i2c_bus
+        self.address = address
+        self._status_cache = 0
+        self._status_updated = False
 
-        # Read Status
-        i2c.write(AS5600_ADDRESS, STATUS_REGISTER) # Select status register
-        data = i2c.read(AS5600_ADDRESS,1)
-        status = data[0]
-        print("status :",  bin(status))
-        md = (status >> 5) & 1  # Bit 5 : magnet detected
-        ml = (status >> 4) & 1  # Bit 4 : magnet too weak
-        mh = (status >> 3) & 1  # Bit 3 : magnet too strong
-        
-        if md:
-            print("Magnet detected")
-            
-            # Read angle
-            i2c.write(AS5600_ADDRESS, ANGLE_REGISTER) # Select angle register
-            data = i2c.read(AS5600_ADDRESS, 2) # Read on 2 octets
-            angle = (data[0] << 8) | data[1] 
-            angleInDegrees = angle * 360 / 4096
-            
-            print("Angle:", angleInDegrees)
-            displayAngle(angleInDegrees)
-            
-        if ml:
-            print("Magnet too weak")
+    def is_connected(self):
+        """Checks if the sensor is connected and responsive."""
+        return self.address in self._i2c.scan()
 
-            display.show(Image.NO)
-            
-        if mh:
+    def _update_status(self):
+        """Reads the status register and caches its value."""
+        try:
+            self._i2c.write(self.address, self.STATUS_REGISTER)
+            self._status_cache = self._i2c.read(self.address, 1)[0]
+            self._status_updated = True
+        except OSError:
+            self._status_cache = 0
+            self._status_updated = False
+
+    @property
+    def magnet_detected(self):
+        """Returns True if a magnet is detected."""
+        if not self._status_updated:
+            self._update_status()
+        return (self._status_cache >> 5) & 1 == 1
+
+    @property
+    def magnet_too_weak(self):
+        """Returns True if the magnet is too far away."""
+        if not self._status_updated:
+            self._update_status()
+        return (self._status_cache >> 4) & 1 == 1
+
+    @property
+    def magnet_too_strong(self):
+        """Returns True if the magnet is too close."""
+        if not self._status_updated:
+            self._update_status()
+        return (self._status_cache >> 3) & 1 == 1
+
+    @property
+    def angle(self):
+        """
+        Reads the raw angle from the sensor and converts it to degrees.
+
+        Returns:
+            The angle in degrees (0-360), or None if an error occurs.
+        """
+        try:
+            self._i2c.write(self.address, self.ANGLE_REGISTER)
+            data = self._i2c.read(self.address, 2)
+            raw_angle = (data[0] << 8) | data[1]
+            return raw_angle * self.DEGREES_PER_RAW_UNIT
+        except OSError:
+            return None
+
+    def clear_status_cache(self):
+        """Clears the status cache to force a fresh read on the next property access."""
+        self._status_updated = False
+
+# --- Display Logic ---
+
+ARROW_IMAGES = [
+    Image.ARROW_N, Image.ARROW_NE, Image.ARROW_E, Image.ARROW_SE,
+    Image.ARROW_S, Image.ARROW_SW, Image.ARROW_W, Image.ARROW_NW
+]
+
+def display_direction(degrees):
+    """Displays an arrow on the micro:bit corresponding to the given angle."""
+    if degrees is None:
+        return
+    # Map the angle (0-360) to an index (0-7) for the ARROW_IMAGES list
+    direction_index = round(degrees / 45) % 8
+    display.show(ARROW_IMAGES[direction_index])
+
+# --- Main Application ---
+
+def main():
+    """Main function to initialize the sensor and run the main loop."""
+    i2c.init()
+    sensor = AS5600(i2c)
+
+    while True:
+        sensor.clear_status_cache() # Force status update on each loop iteration
+
+        if not sensor.is_connected():
+            print("Sensor not detected")
+            display.show(Image.SKULL)
+        elif sensor.magnet_too_strong:
             print("Magnet too strong")
-
             display.show(Image.ANGRY)
-            
-    else:
-        print("Sensor not detected")
+        elif sensor.magnet_too_weak:
+            print("Magnet too weak")
+            display.show(Image.NO)
+        elif sensor.magnet_detected:
+            current_angle = sensor.angle
+            if current_angle is not None:
+                print("Angle: {:.2f}".format(current_angle))
+                display_direction(current_angle)
+            else:
+                # Handle I2C read error for angle
+                display.show(Image.CONFUSED)
+        else:
+            print("No magnet detected")
+            display.show(Image.SAD)
 
-        display.show(Image.SKULL)
-        
+        sleep(200)
 
-        
+if __name__ == "__main__":
+    main()
