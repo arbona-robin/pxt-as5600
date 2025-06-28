@@ -1,6 +1,10 @@
 {
   "AS5600.readAngle|block": "lire l'angle en degrés",
+  "AS5600.readAngle|help": "Lit l'angle de rotation du capteur AS5600. Retourne l'angle en degrés (0-360).",
   "AS5600.isMagnetDetected|block": "aimant détecté",
+  "AS5600.isMagnetDetected|help": "Vérifie si un aimant est détecté par le capteur. Retourne vrai si un aimant est détecté, sinon faux.",
   "AS5600.isMagnetTooWeak|block": "aimant trop faible",
-  "AS5600.isMagnetTooStrong|block": "aimant trop fort"
+  "AS5600.isMagnetTooWeak|help": "Vérifie si l'aimant est trop faible. Retourne vrai si l'aimant est trop faible, sinon faux.",
+  "AS5600.isMagnetTooStrong|block": "aimant trop fort",
+  "AS5600.isMagnetTooStrong|help": "Vérifie si l'aimant est trop fort. Retourne vrai si l'aimant est trop fort, sinon faux."
 }
